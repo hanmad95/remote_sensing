@@ -4,12 +4,17 @@ import numpy as np
 #============================================================================
 # Plot TROPOMI CH4 from one Dataframe
 #============================================================================
-# Input:
-# Dataframe: ["lat","lon","tropomi_ch4","quality","bounds_lat_ll","bounds_lat_lr","bounds_lat_ur","bounds_lat_ul","bounds_lon_ll","bounds_lon_lr","bounds_lon_ur","bounds_lon_ul"]
+
 
 def plot_tropomi(m,fg,dataframe,grid_shape,min_value,max_value,sat_lat,sat_lon,group_container):
     
-
+    """
+    Notes to Inputs: 
+        dataframe = ["lat","lon","tropomi_ch4","quality","bounds_lat_ll","bounds_lat_lr","bounds_lat_ur",
+                     "bounds_lat_ul","bounds_lon_ll","bounds_lon_lr","bounds_lon_ur","bounds_lon_ul"]
+        sat_= location of the satellite trial
+        _container = contains the relevant folium layers
+    """
     # Create Colormap
     colormap = cm.LinearColormap(colors=['blue','lightblue','red'], index=[min_value,(min_value+max_value)/2,max_value],
                                  vmin=min_value,vmax=max_value)
