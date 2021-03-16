@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 
 # Add Folderpaths 
 current_dir = os.path.dirname(os.path.abspath(__file__))
-folder_names = ["outlier_fct","load_fct","plot_fct"]
+folder_names = ["load_fct","plot_fct"]
 for folder in folder_names:
     Funktion_path = current_dir + "\\" + folder
     sys.path.insert(0,Funktion_path)
@@ -26,11 +26,7 @@ from merge_data import data_merge_down
 from load_wind_data import load_wind
 from plot_wind import plot_wind_data
 
-# Outlier Detection Functions
-from quality_flag import qual_outlier
-from zscores import zscore
-from LOF import LOF
-from SOD import sod
+
 #============================================================================
 #  1 Create Map and Layer COntrol
 #============================================================================
@@ -38,58 +34,29 @@ from SOD import sod
 m = folium.Map(location=[48.137154, 11.576124],zoom_start=10)
 
 #Define Feature Groups:
-fg = folium.FeatureGroup(name='All Feature Groups')
+fg = folium.FeatureGroup(name=' All CH4 Features from 19.09.202)
 m.add_child(fg)
 
 # Create Feature SubGroup of TROPOMI
-group_tropomi = plugins.FeatureGroupSubGroup(fg,'TROPMI Data')
+group_tropomi = plugins.FeatureGroupSubGroup(fg,'TROPMI CH4 [mol / m^2]')
 m.add_child(group_tropomi)
-group_tropomi_trail = plugins.FeatureGroupSubGroup(fg,'S5P Trail')
+group_tropomi_trail = plugins.FeatureGroupSubGroup(fg,'Satellite Trail')
 m.add_child(group_tropomi_trail)
 group_tropomi_centers = plugins.FeatureGroupSubGroup(fg, 'TROPOMI Centerpoints')
 m.add_child(group_tropomi_centers)
 group_tropomi_container=[group_tropomi,group_tropomi_trail,group_tropomi_centers]
 
 # Subgroup for the CAMS-REG DATA:
-group_cams_reg_ch4 = plugins.FeatureGroupSubGroup(fg, 'CAMS_REG_CH4')
+group_cams_reg_ch4 = plugins.FeatureGroupSubGroup(fg, 'CAMS_REG CH4 [kg / year]')
 m.add_child(group_cams_reg_ch4)
 group_cams_reg_centerpoints = plugins.FeatureGroupSubGroup(fg, 'CAMS_REG_Centerpoints')
 m.add_child(group_cams_reg_centerpoints)
 group_cams_reg_container=[group_cams_reg_ch4, group_cams_reg_centerpoints]
 
-# Add LULC DATA
-group_lulc = plugins.FeatureGroupSubGroup(fg, 'LULC Classes')
-m.add_child(group_lulc)
-group_lulc_container=[group_lulc]
-
 #Add Wind Data
 group_wind = plugins.FeatureGroupSubGroup(fg, 'Wind Data')
 m.add_child(group_wind)
 group_wind_container=[group_wind]
-
-# Outlier Detection -----------------------------------------------------------
-# Add Quality Outlier
-group_quality_outlier = plugins.FeatureGroupSubGroup(fg, 'Quality_Outlier')
-m.add_child(group_quality_outlier)
-group_quality_container=[group_quality_outlier]
-
-
-# Add Z_Scores 
-group_zscore_outlier = plugins.FeatureGroupSubGroup(fg, 'Z_Scores')
-m.add_child(group_zscore_outlier)
-group_zscore_container=[group_zscore_outlier]
-
-# Add LOF
-group_lof_outlier = plugins.FeatureGroupSubGroup(fg, 'LOF')
-m.add_child(group_lof_outlier)
-group_lof_qval = plugins.FeatureGroupSubGroup(fg, 'LOF_quality_above')
-#m.add_child(group_lof_qval)
-group_lof_container=[group_lof_outlier,group_lof_qval]
-
-# Add SOD Outliers
-group_sod_outlier = plugins.FeatureGroupSubGroup(fg, 'SOD')
-m.add_child(group_sod_outlier)
-group_sod_container=[group_sod_outlier]
 
  # Add Layer Control to Map
 folium.LayerControl(collapsed=True).add_to(m)
@@ -145,22 +112,7 @@ print("CAMS DATA PLOTTED")
 
 
 ##============================================================================
-# 6  Load Lulc data stored in pkl file
-#=============================================================================
-# Load LULC FIles
-lulc_lat,lulc_lat_bounds,lulc_lon,lulc_lon_bounds,lulc_classes,lulc_flag_meanings,lulc_flag_values =  pickle.load(open("lulc.pkl","rb"))
-print("LULC DATA LOADED")
-
-#Merge LULC into CAMS-REG Grid
-merged_lulc_df = data_merge_down_lulc_only(cam_df, cam_lat_bounds,cam_lon_bounds, lulc_classes,lulc_lat,lulc_lon)
-print("LULC DATA MERGED INTO CAMS REG GRID")
-# Plott the merged data data
-m = plot_merged_lulc_data(m,fg,merged_lulc_df, cam_lat_bounds,cam_lon_bounds,group_lulc_container)
-print("LULC DATA PLOTTED")
-
-
-##============================================================================
-#  7 Add wind data
+#  6 Add wind data
 #=============================================================================
 current_dir = os.getcwd()
 file_name = r'\ecmwf_wind_2020_Sept.nc'
@@ -174,31 +126,7 @@ m = plot_wind_data(m,fg,lat_wind,lon_wind,u10,v10,group_wind_container)
 
 
 ##============================================================================
-# 7 Apply Outlier Detection Algorithms ! 
-#=============================================================================
-qual_thresh = 0.5
-
-# Ground Truth based on flagged outlier values
-m, QUAL_outliers = qual_outlier(m, dataframes[i],qual_thresh, group_quality_container,'purple')
-
-# Add Z Scores
-m,z_scores, Z_score_outliers = zscore(m, dataframes[i],min_ch4_values[i],max_ch4_values[i],group_zscore_container,'orange')
-
-# Add LOF Outliers
-neighbours = 10
-m, LOF_outliers = LOF(m,dataframes[i],neighbours,group_lof_container,'green')
-
-# Add SOD Outliers
-m, SOD_outliers = sod(m,dataframes[i],neighbours,group_sod_container,'beige')
-
-##============================================================================
-# Merge TROPOMI + CAMS - REG into the LULC Grid 
-#=============================================================================
-merged_df , indexes = data_merge_down(dataframes[i],cam_df, cam_lat_bounds, cam_lon_bounds, lulc_classes,lulc_lat,lulc_lon)
-print("All used indexes for merging: ",len(set(indexes))," out of ", len(indexes))
-
-##============================================================================
-# 8 Add CAMS-REG data
+# 7 Save the map
 #=============================================================================
 # Save Map
 name_of_map = r"maps\Map_trop_"+dates[i]+"_wind_" +str(wind_date)[0:10] +".html" 

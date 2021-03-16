@@ -2,17 +2,16 @@
 from netCDF4 import Dataset
 import numpy as np
 from datetime import datetime, timedelta
-
-
 #============================================================================
-# Read the nc data 
+# Read the wind data 
 #============================================================================
-# INPUT: area_of_interest = {"lat_min_area":46,"lat_max_area":55,"lon_min_area":5,"lon_max_area":15}
-# time = hours since 1900-01-01 00:00:00.0
-
 
 
 def load_wind(path_to_file:str, area_of_interest:dict,date):
+    """
+    Notes to Inputs: 
+        area_of_interest = {"lat_min_area":46,"lat_max_area":55,"lon_min_area":5,"lon_max_area":15}
+    """
     
     nc_file = Dataset(path_to_file, mode='r')
     

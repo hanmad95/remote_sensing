@@ -3,13 +3,20 @@ import branca.colormap as cm
 import folium 
 from folium import plugins
 import numpy as np
-
 #============================================================================
 # Plot TROPOMI CH4 from one Dataframe
 #============================================================================
-# Input:
-# Dataframe: ["lat","lon","lat_index","lon_index","ch4"]
+
+
 def plot_cams_data(m,fg,dataframe,lat_grid,lon_grid,lat_bounds,lon_bounds,group_container):
+    """
+    Notes to Inputs: 
+        dataframe = ["lat","lon","lat_index","lon_index","ch4"]
+        _grid = location of grid center points
+        _bounds = mark the area of each sample
+        _container = contains the relevant folium layers
+    """
+    
     # Cut out ch4 of dataframe
     ch4 = dataframe["ch4"].to_numpy()
     lat_center= dataframe["lat"].to_numpy()

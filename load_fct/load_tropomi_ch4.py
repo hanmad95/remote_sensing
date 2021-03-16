@@ -5,12 +5,16 @@ import numpy as np
 import pandas as pd 
 
 #============================================================================
-# Read the nc data 
+# Read the nc data of Tropomi
 #============================================================================
-# INPUT: area_of_interest = {"lat_min_area":46,"lat_max_area":55,"lon_min_area":5,"lon_max_area":15}
+
 
 def load_product_data(paths_to_files:list, area_of_interest:dict, qthresh:float, dates:str):
-
+    """
+    Notes to Inputs: 
+        area_of_interest = {"lat_min_area":46,"lat_max_area":55,"lon_min_area":5,"lon_max_area":15}
+        qthresh = only data samples above this quality threshold will be considered
+    """
     dataframes = []
     sat_lats = []
     sat_lons = []

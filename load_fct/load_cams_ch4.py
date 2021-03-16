@@ -2,9 +2,13 @@ import pandas as pd
 import numpy as np
 from netCDF4 import Dataset
 
-def load_CAMS_data(path_to_file:list, weights:list, area_of_interest:dict):
-        # INPUT: area_of_interest = {"lat_min_area":46,"lat_max_area":55,"lon_min_area":5,"lon_max_area":15}
 
+def load_CAMS_data(path_to_file:list, weights:list, area_of_interest:dict):
+        """
+        Notes to Inputs: 
+            area_of_interest = {"lat_min_area":46,"lat_max_area":55,"lon_min_area":5,"lon_max_area":15}
+            weights = influence of each cams-reg category
+        """
         #============================================================================
         # Load the grid
         #============================================================================
